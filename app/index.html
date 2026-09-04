@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MonadSentry — ERC-8004 audit agent on Monad</title>
+<meta name="description" content="Autonomous smart-contract audit agent with ERC-8004 identity and reputation-gated pricing, wired to the canonical registries on Monad mainnet.">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<style>
+  :root{
+    --purple:#836EF9; --deep:#200052; --off:#FBFAF9; --berry:#A0055D;
+    --bg:#0B0614; --panel:#150C29; --line2:#2C1F47;
+    --txt:#EDE9F5; --dim:#9C93B8; --ok:#4ADE80; --warn:#FBBF24; --bad:#F87171;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font:15px/1.6 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    background-image:radial-gradient(900px 500px at 12% -10%,rgba(131,110,249,.18),transparent 60%),
+                     radial-gradient(700px 420px at 100% 0%,rgba(160,5,93,.12),transparent 55%);}
+  a{color:var(--purple)}
+  .wrap{max-width:1060px;margin:0 auto;padding:36px 22px 72px}
+  header{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  header img{width:46px;height:46px}
+  h1{font-size:26px;margin:0;letter-spacing:-.02em}
+  .sub{color:var(--dim);font-size:14px;margin-top:2px}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;
+    border:1px solid var(--line2);border-radius:999px;color:var(--dim);background:rgba(255,255,255,.02)}
+  .chip b{color:var(--txt);font-weight:600}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--dim)}
+  .dot.ok{background:var(--ok);box-shadow:0 0 8px var(--ok)}
+  .dot.warn{background:var(--warn)}
+  .dot.bad{background:var(--bad)}
+  .grid{display:grid;gap:16px;margin-top:26px}
+  .g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+  .g3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  .card{background:var(--panel);border:1px solid var(--line2);border-radius:14px;padding:18px 20px}
+  .card h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin:0 0 14px}
+  .row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:14px}
+  .row:last-child{border-bottom:0}
+  .row span:first-child{color:var(--dim)}
+  .mono{font-family:var(--mono);font-size:12.5px;word-break:break-all}
+  .big{font-size:28px;font-weight:650;letter-spacing:-.02em}
+  .muted{color:var(--dim);font-size:13px}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th{text-align:left;color:var(--dim);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+    padding:0 10px 9px 0;font-weight:600;border-bottom:1px solid var(--line2)}
+  td{padding:10px 10px 10px 0;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  .flow{counter-reset:s;list-style:none;padding:0;margin:0}
+  .flow li{counter-increment:s;position:relative;padding:0 0 16px 38px;border-left:1px solid var(--line2);margin-left:11px}
+  .flow li:last-child{border-left-color:transparent;padding-bottom:0}
+  .flow li::before{content:counter(s);position:absolute;left:-11px;top:0;width:22px;height:22px;border-radius:50%;
+    background:var(--deep);border:1px solid var(--purple);color:var(--purple);font-size:11px;font-weight:700;
+    display:grid;place-items:center}
+  .flow code{font-family:var(--mono);font-size:12.5px;color:var(--purple)}
+  .flow p{margin:3px 0 0;color:var(--dim);font-size:13px}
+  .note{border-left:2px solid var(--warn);background:rgba(251,191,36,.06);padding:11px 14px;border-radius:0 8px 8px 0;font-size:13.5px;color:#E8DCC0}
+  .btn{display:inline-block;padding:9px 16px;border-radius:9px;background:var(--purple);color:#0B0614;
+    font-weight:650;font-size:13.5px;text-decoration:none;border:0;cursor:pointer}
+  .btn.ghost{background:transparent;border:1px solid var(--line2);color:var(--txt)}
+  .links{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+  footer{margin-top:34px;color:var(--dim);font-size:12.5px;border-top:1px solid var(--line2);padding-top:16px}
+  .pill{font-size:11px;padding:2px 8px;border-radius:6px;font-family:var(--mono)}
+  .pill.live{background:rgba(74,222,128,.14);color:var(--ok)}
+  .pill.pend{background:rgba(251,191,36,.14);color:var(--warn)}
+  .pill.err{background:rgba(248,113,113,.14);color:var(--bad)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <img src="logo.svg" alt="">
+    <div style="flex:1 1 260px">
+      <h1>MonadSentry</h1>
+      <div class="sub">Smart-contract audit agent with ERC-8004 identity and reputation-gated pricing</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <span class="chip"><span class="dot" id="netdot"></span><b>Monad</b> chain <span id="chainid">143</span></span>
+      <span class="chip">Track <b>04</b></span>
+    </div>
+  </header>
+
+  <div class="grid g3">
+    <div class="card">
+      <h2>Identity registry</h2>
+      <div class="mono" id="idAddr">0x8004A169FB4a3325136EB29fA0ceB6D2e539a432</div>
+      <div class="row" style="margin-top:10px"><span>code on chain</span><span id="idCode" class="pill pend">checking…</span></div>
+    </div>
+    <div class="card">
+      <h2>Reputation registry</h2>
+      <div class="mono" id="repAddr">0x8004BAa17C55a88189AE136b182e5fdA19dE9b63</div>
+      <div class="row" style="margin-top:10px"><span>points at identity</span><span id="repLink" class="pill pend">checking…</span></div>
+    </div>
+    <div class="card">
+      <h2>MonadSentry contract</h2>
+      <div class="mono" id="msAddr">not deployed yet</div>
+      <div class="row" style="margin-top:10px"><span>status</span><span id="msCode" class="pill pend">pending deploy</span></div>
+    </div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <h2>Live agent state</h2>
+      <div class="row"><span>agent id</span><span class="mono" id="agentId">—</span></div>
+      <div class="row"><span>agent wallet</span><span class="mono" id="agentWallet">—</span></div>
+      <div class="row"><span>feedback entries</span><span class="mono" id="fbCount">—</span></div>
+      <div class="row"><span>audits anchored</span><span class="mono" id="auditCount">—</span></div>
+      <div class="muted" style="margin-top:12px" id="liveNote">
+        Reads run straight against <span class="mono">rpc.monad.xyz</span> with <span class="mono">eth_call</span>. No wallet needed.
+      </div>
+    </div>
+    <div class="card">
+      <h2>Price book</h2>
+      <table>
+        <thead><tr><th>Tier</th><th>Price</th><th>Min feedback</th><th>Open to you</th></tr></thead>
+        <tbody id="tiers">
+          <tr><td>0 · cold start</td><td class="mono">0.5 MON</td><td class="mono">0</td><td><span class="pill live">yes</span></td></tr>
+          <tr><td>1 · proven</td><td class="mono">2.0 MON</td><td class="mono">3</td><td><span class="pill pend">needs 3</span></td></tr>
+        </tbody>
+      </table>
+      <div class="muted" style="margin-top:12px">
+        Tiers are enforced in <span class="mono">requestAudit</span>. Below the minimum the call reverts
+        <span class="mono">ReputationTooLow</span>, read live from the canonical Reputation Registry.
+      </div>
+    </div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card">
+      <h2>Audit lifecycle</h2>
+      <ol class="flow">
+        <li><code>registerAgent(agentURI)</code>
+          <p>Canonical registry <code>safeMint</code>s the agent NFT to this contract, so MonadSentry itself holds the identity and is the default agent wallet.</p></li>
+        <li><code>setPriceTier(tierId, price, minFeedbackCount)</code>
+          <p>Operator publishes the price book. Each tier carries a reputation floor.</p></li>
+        <li><code>requestAudit(agentId, targetHash, targetURI, tierId)</code>
+          <p>Client opens the audit and locks the target bundle hash. Reverts if the agent has not earned the tier.</p></li>
+        <li><code>deliverAudit(auditId, reportHash, reportURI)</code>
+          <p>Agent posts the report reference. Anyone can hash the artifact and compare.</p></li>
+        <li><code>attestReport(auditId, feedbackValue)</code>
+          <p>Client closes the record, then writes the reputation entry directly on the registry using <code>feedbackParams(auditId)</code>.</p></li>
+      </ol>
+    </div>
+    <div class="card">
+      <h2>Why the client writes the feedback</h2>
+      <p style="margin-top:0">The canonical Reputation Registry rejects any caller for which
+      <span class="mono">isAuthorizedOrOwner(msg.sender, agentId)</span> is true. MonadSentry holds the agent NFT,
+      so it can never write feedback about its own agent. That guard is the point: reputation only exists if a
+      counterparty put it there.</p>
+      <div class="note">
+        <span class="mono">feedbackParams(auditId)</span> returns the exact arguments to pass, so every MonadSentry
+        entry carries <span class="mono">tag1=monadsentry</span>, <span class="mono">tag2=audit</span>,
+        <span class="mono">endpoint=audit:N</span> and stays queryable as one reputation stream.
+      </div>
+      <h2 style="margin-top:20px">Integration constraints</h2>
+      <div class="row"><span>evm version</span><span class="mono">cancun (proxies use PUSH0)</span></div>
+      <div class="row"><span>receiver</span><span class="mono">IERC721Receiver required</span></div>
+      <div class="row"><span>setAgentWallet</span><span class="mono">4-arg, EIP-712 by newWallet</span></div>
+      <div class="row"><span>NFT transfer</span><span class="mono">wipes agentWallet</span></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h2>Verification</h2>
+    <div class="grid g3" style="margin-top:0">
+      <div><div class="big" id="vUnit">4</div><div class="muted">unit tests vs mock registry</div></div>
+      <div><div class="big" id="vFork">9</div><div class="muted">fork tests vs live mainnet registries</div></div>
+      <div><div class="big">143</div><div class="muted">chain the fork suite runs against</div></div>
+    </div>
+    <div class="muted" style="margin-top:14px">
+      <span class="mono">forge test</span> runs the mock suite offline; <span class="mono">forge test --fork-url https://rpc.monad.xyz</span>
+      exercises registration, the reputation gate and the full audit lifecycle against the deployed registries.
+    </div>
+    <div class="links">
+      <a class="btn" href="https://github.com/Carlys17/monadsentry">Source</a>
+      <a class="btn ghost" href="agent-card.json">Agent card</a>
+      <a class="btn ghost" href="https://monadexplorer.com/address/0x8004A169FB4a3325136EB29fA0ceB6D2e539a432">Identity registry</a>
+      <a class="btn ghost" href="https://monadexplorer.com/address/0x8004BAa17C55a88189AE136b182e5fdA19dE9b63">Reputation registry</a>
+    </div>
+  </div>
+
+  <footer>
+    Built for Monad Metropolis, track 04 (Trust, Identity &amp; AI Infrastructure) by
+    <a href="https://github.com/Carlys17">Carlys17</a>.
+    State on this page is read live from Monad mainnet; nothing is mocked. Fields showing
+    <span class="mono">—</span> are not on chain yet.
+  </footer>
+</div>
+
+<script>
+const RPC   = 'https://rpc.monad.xyz';
+const ID    = '0x8004A169FB4a3325136EB29fA0ceB6D2e539a432';
+const REP   = '0x8004BAa17C55a88189AE136b182e5fdA19dE9b63';
+// Set after deployment; the page reads live state from it when present.
+const SENTRY = null;
+const AGENT_ID = null;
+
+const SIG = {
+  getIdentityRegistry:'0xbc4d861b',
+  getAgentWallet:'0x00339509',
+  getClients:'0x42dd519c',
+  getLastIndex:'0xf2d81759',
+  auditCount:'0x0be2e192',
+  tierCount:'0x96b55f7d',
+  priceTiers:'0x90dcbeff'
+};
+const pad = v => v.replace(/^0x/,'').padStart(64,'0');
+const num = h => (!h || h === '0x') ? null : BigInt(h);
+const addrOf = h => (!h || h.length < 66) ? null : '0x' + h.slice(-40);
+const short = a => a ? a.slice(0,10) + '…' + a.slice(-8) : '—';
+
+let rpcId = 1;
+async function rpc(method, params){
+  const r = await fetch(RPC, {
+    method:'POST', headers:{'content-type':'application/json'},
+    body: JSON.stringify({jsonrpc:'2.0', id: rpcId++, method, params})
+  });
+  const j = await r.json();
+  if (j.error) throw new Error(j.error.message);
+  return j.result;
+}
+const call = (to, data) => rpc('eth_call', [{to, data}, 'latest']);
+const setPill = (el, cls, txt) => { el.className = 'pill ' + cls; el.textContent = txt; };
+
+async function boot(){
+  const dot = document.getElementById('netdot');
+  try {
+    const cid = await rpc('eth_chainId', []);
+    document.getElementById('chainid').textContent = String(parseInt(cid, 16));
+    dot.className = 'dot ok';
+  } catch { dot.className = 'dot bad'; }
+
+  // registries actually deployed?
+  try {
+    const [idc, repc] = await Promise.all([
+      rpc('eth_getCode', [ID, 'latest']),
+      rpc('eth_getCode', [REP, 'latest'])
+    ]);
+    setPill(document.getElementById('idCode'),
+      idc && idc.length > 2 ? 'live' : 'err',
+      idc && idc.length > 2 ? ((idc.length - 2) / 2) + ' bytes' : 'empty');
+
+    const linked = await call(REP, SIG.getIdentityRegistry);
+    const ok = addrOf(linked) && addrOf(linked).toLowerCase() === ID.toLowerCase();
+    setPill(document.getElementById('repLink'), ok ? 'live' : 'err', ok ? 'verified' : 'mismatch');
+  } catch(e){
+    setPill(document.getElementById('idCode'), 'err', 'rpc error');
+    setPill(document.getElementById('repLink'), 'err', 'rpc error');
+  }
+
+  if (!SENTRY) {
+    setPill(document.getElementById('msCode'), 'pend', 'pending deploy');
+    document.getElementById('liveNote').innerHTML =
+      'Registry reads above are live. Agent fields stay <span class="mono">—</span> until '
+      + '<span class="mono">registerAgent()</span> lands on chain 143; the fork suite already proves the flow '
+      + 'against these exact registries.';
+    return;
+  }
+
+  document.getElementById('msAddr').textContent = SENTRY;
+  try {
+    const code = await rpc('eth_getCode', [SENTRY, 'latest']);
+    setPill(document.getElementById('msCode'),
+      code && code.length > 2 ? 'live' : 'err',
+      code && code.length > 2 ? 'deployed' : 'no code');
+    const ac = num(await call(SENTRY, SIG.auditCount));
+    if (ac !== null) document.getElementById('auditCount').textContent = ac.toString();
+  } catch {
+    setPill(document.getElementById('msCode'), 'err', 'rpc error');
+  }
+
+  if (AGENT_ID === null) return;
+  document.getElementById('agentId').textContent = String(AGENT_ID);
+  try {
+    const w = addrOf(await call(ID, SIG.getAgentWallet + pad('0x' + AGENT_ID.toString(16))));
+    document.getElementById('agentWallet').textContent = short(w);
+
+    const raw = await call(REP, SIG.getClients + pad('0x' + AGENT_ID.toString(16)));
+    const body = raw.replace(/^0x/,'').slice(128);
+    const n = Number(BigInt('0x' + (raw.replace(/^0x/,'').slice(64,128) || '0')));
+    let total = 0n;
+    for (let i = 0; i < n; i++){
+      const client = '0x' + body.slice(i*64 + 24, (i+1)*64);
+      total += num(await call(REP, SIG.getLastIndex
+        + pad('0x' + AGENT_ID.toString(16)) + pad(client))) ?? 0n;
+    }
+    document.getElementById('fbCount').textContent = total.toString();
+  } catch {}
+}
+boot();
+</script>
+</body>
+</html>

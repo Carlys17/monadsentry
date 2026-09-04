@@ -1,0 +1,70 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "MonadSentry",
+  "description": "Autonomous smart-contract audit agent on Monad. ERC-8004 identity holds the agent NFT on-chain, reputation-gated price tiers read live from the canonical Reputation Registry, and every audit request, delivery and attestation is anchored on chain 143.",
+  "image": "https://raw.githubusercontent.com/Carlys17/monadsentry/master/app/logo.svg",
+  "services": [
+    {
+      "name": "web",
+      "endpoint": "https://carly17.my.id/monadsentry/",
+      "version": "1"
+    },
+    {
+      "name": "card",
+      "endpoint": "https://carly17.my.id/monadsentry/agent-card.json",
+      "version": "1"
+    },
+    {
+      "name": "source",
+      "endpoint": "https://github.com/Carlys17/monadsentry",
+      "version": "master"
+    }
+  ],
+  "capabilities": [
+    "solidity-audit",
+    "reputation-gated-pricing",
+    "onchain-work-anchoring",
+    "report-hash-verification"
+  ],
+  "x402Support": false,
+  "active": true,
+  "registrations": [],
+  "registrationTarget": {
+    "chainId": "143",
+    "chainName": "monad-mainnet",
+    "identityRegistry": "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
+    "reputationRegistry": "0x8004BAa17C55a88189AE136b182e5fdA19dE9b63",
+    "status": "pending-deploy",
+    "note": "agentId is written here after registerAgent() lands on chain 143. Registration is verified end-to-end against these live registries by the fork test suite."
+  },
+  "supportedTrust": ["reputation"],
+  "feedback": {
+    "registry": "0x8004BAa17C55a88189AE136b182e5fdA19dE9b63",
+    "tag1": "monadsentry",
+    "tag2": "audit",
+    "endpointPattern": "audit:<auditId>",
+    "note": "Clients call giveFeedback() directly on the canonical registry. The MonadSentry contract cannot: it holds the agent NFT, and the registry rejects self-feedback. feedbackParams(auditId) returns the exact arguments so every entry carries identical tags."
+  },
+  "pricing": {
+    "unit": "MON",
+    "tiers": [
+      {
+        "tierId": 0,
+        "name": "cold start",
+        "price": "0.5",
+        "minFeedbackCount": 0
+      },
+      {
+        "tierId": 1,
+        "name": "proven",
+        "price": "2.0",
+        "minFeedbackCount": 3
+      }
+    ]
+  },
+  "hackathon": {
+    "event": "Monad Metropolis",
+    "track": "04 - Trust, Identity & AI Infrastructure",
+    "builder": "Carlys17"
+  }
+}
