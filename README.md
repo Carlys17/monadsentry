@@ -27,6 +27,33 @@ The lifecycle, all anchored on-chain:
 6. Client writes the reputation entry themselves on the canonical Reputation Registry,
    using the uniform tags from `feedbackParams(auditId)`.
 
+## Live on Monad mainnet (chain 143)
+
+| | |
+| ---------------- | -------------------------------------------- |
+| MonadSentry      | `0x30059c82c2a252Bd27b6bAD56fC7B7ce995afc5C` |
+| ERC-8004 agentId | `10245` |
+| Agent wallet     | the contract itself (registry auto-set on `register()`) |
+| Operator (owner) | `0xBae72FdEF2fC7F66Ef626c5c18e09BC11d78D977` |
+| Agent card       | https://carly17.my.id/monadsentry/agent-card.json |
+| Frontend         | https://carly17.my.id/monadsentry/ |
+
+Deploy transactions:
+
+| Step | Tx |
+| ---- | -- |
+| deploy | `0x1ed00ad7b8e2c8f394940b211ac5fc9a486b012b6401587bf788af794697fb87` |
+| `registerAgent` | `0x7fcd98ca19ba3c668b530b8b6a26acee846f3a2f244a55e0c50ea9fe52abf62a` |
+| `setPriceTier(0, 0.5 MON, 0)` | `0x7c1a98858915582ce68d26adb082d8b7fbc48e0c646d0d77873f11a54c3104a4` |
+| `setPriceTier(1, 2 MON, 3)` | `0x56e4988ea7833478111285e6256eea9e1d16d805dfee34157c10da4257cc71ea` |
+
+Verify the live state without a wallet:
+
+```shell
+cast call 0x30059c82c2a252Bd27b6bAD56fC7B7ce995afc5C "tierCount()(uint256)" --rpc-url https://rpc.monad.xyz
+cast call 0x8004A169FB4a3325136EB29fA0ceB6D2e539a432 "getAgentWallet(uint256)(address)" 10245 --rpc-url https://rpc.monad.xyz
+```
+
 ## Canonical registries (Monad mainnet, chain 143)
 
 | Registry   | Address                                      |

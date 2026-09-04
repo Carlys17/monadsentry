@@ -30,13 +30,13 @@
   "active": true,
   "registrations": [
     {
-      "agentId": "10244",
+      "agentId": "10245",
       "chainId": "143",
       "chainName": "monad-mainnet",
       "registry": "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
-      "contract": "0x516a1Ec90629Fa11085ed5a4EEc4106b713C234",
-      "status": "simulated",
-      "note": "Address and agentId derived from SimulateDeploy on a mainnet fork. Deploy broadcast pending MON gas."
+      "contract": "0x30059c82c2a252Bd27b6bAD56fC7B7ce995afc5C",
+      "status": "live",
+      "note": "Deployed and registered on Monad mainnet (chain 143) on 4 Sep 2026."
     }
   ],
   "registrationTarget": {
@@ -44,8 +44,8 @@
     "chainName": "monad-mainnet",
     "identityRegistry": "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
     "reputationRegistry": "0x8004BAa17C55a88189AE136b182e5fdA19dE9b63",
-    "status": "broadcast-pending",
-    "note": "Broadcast pending MON gas. Address: 0x516a1Ec90629Fa11085ed5a4EEc4106b713C234, agentId: 10244"
+    "status": "deployed",
+    "note": "Deployed and registered on Monad mainnet. Contract holds agent NFT #10245."
   },
   "supportedTrust": ["reputation"],
   "feedback": {
