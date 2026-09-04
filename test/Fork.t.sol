@@ -46,7 +46,7 @@ contract ForkTest is Test {
     // ------------------------------------------------------------------
 
     function test_registerAgent_onLiveRegistry() public {
-        uint256 agentId = sentry.registerAgent("https://monadsentry.xyz/agent-card.json");
+        uint256 agentId = sentry.registerAgent("https://carly17.my.id/monadsentry/agent-card.json");
 
         assertGt(agentId, 0, "agentId must be minted");
         console.log("minted agentId:", agentId);
@@ -68,7 +68,7 @@ contract ForkTest is Test {
 
     function test_fullAuditLifecycle() public {
         // 1. Register the audit agent on the live registry
-        uint256 agentId = sentry.registerAgent("https://monadsentry.xyz/agent-card.json");
+        uint256 agentId = sentry.registerAgent("https://carly17.my.id/monadsentry/agent-card.json");
 
         // 2. Owner opens a tier with no reputation requirement (cold start)
         sentry.setPriceTier(0, 0.5 ether, 0);
@@ -149,7 +149,7 @@ contract ForkTest is Test {
     // ------------------------------------------------------------------
 
     function test_reputationGate_blocksUnprovenAgent() public {
-        uint256 agentId = sentry.registerAgent("https://monadsentry.xyz/a.json");
+        uint256 agentId = sentry.registerAgent("https://carly17.my.id/monadsentry/agent-card.json");
 
         // Tier requiring 3 prior feedbacks; the fresh agent has none
         sentry.setPriceTier(1, 2 ether, 3);
@@ -160,7 +160,7 @@ contract ForkTest is Test {
     }
 
     function test_quote_returnsTierPrice() public {
-        uint256 agentId = sentry.registerAgent("https://monadsentry.xyz/a.json");
+        uint256 agentId = sentry.registerAgent("https://carly17.my.id/monadsentry/agent-card.json");
         sentry.setPriceTier(0, 0.42 ether, 0);
         assertEq(sentry.quote(agentId, 0), 0.42 ether);
     }
@@ -176,7 +176,7 @@ contract ForkTest is Test {
     }
 
     function test_nonRequesterCannotAttest() public {
-        uint256 agentId = sentry.registerAgent("https://monadsentry.xyz/a.json");
+        uint256 agentId = sentry.registerAgent("https://carly17.my.id/monadsentry/agent-card.json");
         sentry.setPriceTier(0, 1 ether, 0);
 
         vm.prank(client);
@@ -189,7 +189,7 @@ contract ForkTest is Test {
     }
 
     function test_cannotAttestBeforeDelivery() public {
-        uint256 agentId = sentry.registerAgent("https://monadsentry.xyz/a.json");
+        uint256 agentId = sentry.registerAgent("https://carly17.my.id/monadsentry/agent-card.json");
         sentry.setPriceTier(0, 1 ether, 0);
 
         vm.prank(client);
@@ -201,7 +201,7 @@ contract ForkTest is Test {
     }
 
     function test_cannotDeliverTwice() public {
-        uint256 agentId = sentry.registerAgent("https://monadsentry.xyz/a.json");
+        uint256 agentId = sentry.registerAgent("https://carly17.my.id/monadsentry/agent-card.json");
         sentry.setPriceTier(0, 1 ether, 0);
 
         vm.prank(client);

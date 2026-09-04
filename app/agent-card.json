@@ -28,14 +28,24 @@
   ],
   "x402Support": false,
   "active": true,
-  "registrations": [],
+  "registrations": [
+    {
+      "agentId": "10244",
+      "chainId": "143",
+      "chainName": "monad-mainnet",
+      "registry": "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
+      "contract": "0x516a1Ec90629Fa11085ed5a4EEc4106b713C234",
+      "status": "simulated",
+      "note": "Address and agentId derived from SimulateDeploy on a mainnet fork. Deploy broadcast pending MON gas."
+    }
+  ],
   "registrationTarget": {
     "chainId": "143",
     "chainName": "monad-mainnet",
     "identityRegistry": "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
     "reputationRegistry": "0x8004BAa17C55a88189AE136b182e5fdA19dE9b63",
-    "status": "pending-deploy",
-    "note": "agentId is written here after registerAgent() lands on chain 143. Registration is verified end-to-end against these live registries by the fork test suite."
+    "status": "broadcast-pending",
+    "note": "Broadcast pending MON gas. Address: 0x516a1Ec90629Fa11085ed5a4EEc4106b713C234, agentId: 10244"
   },
   "supportedTrust": ["reputation"],
   "feedback": {

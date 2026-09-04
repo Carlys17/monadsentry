@@ -194,8 +194,8 @@ const RPC   = 'https://rpc.monad.xyz';
 const ID    = '0x8004A169FB4a3325136EB29fA0ceB6D2e539a432';
 const REP   = '0x8004BAa17C55a88189AE136b182e5fdA19dE9b63';
 // Set after deployment; the page reads live state from it when present.
-const SENTRY = null;
-const AGENT_ID = null;
+const SENTRY = '0x516a1Ec90629Fa11085ed5a4EEc4106b713C234';
+const AGENT_ID = 10244;
 
 const SIG = {
   getIdentityRegistry:'0xbc4d861b',
@@ -262,9 +262,15 @@ async function boot(){
   document.getElementById('msAddr').textContent = SENTRY;
   try {
     const code = await rpc('eth_getCode', [SENTRY, 'latest']);
-    setPill(document.getElementById('msCode'),
-      code && code.length > 2 ? 'live' : 'err',
-      code && code.length > 2 ? 'deployed' : 'no code');
+    const hasCode = code && code.length > 2;
+    if (!hasCode) {
+      setPill(document.getElementById('msCode'), 'pend', 'not broadcast yet');
+      document.getElementById('liveNote').innerHTML =
+        'The contract address is deterministic (' + SENTRY.slice(0,10) + '...). '
+        + 'It has no code yet — broadcast is pending MON gas.';
+      return;
+    }
+    setPill(document.getElementById('msCode'), 'live', 'deployed');
     const ac = num(await call(SENTRY, SIG.auditCount));
     if (ac !== null) document.getElementById('auditCount').textContent = ac.toString();
   } catch {
